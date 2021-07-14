@@ -1,0 +1,173 @@
+<!-- Patryk Rygiel -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+        integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+        crossorigin="anonymous" defer>
+    </script>
+
+    <script src="webgl_utils.js"></script>
+    <script src="math_utils.js"></script>
+    <script src="data.js"></script>
+    <script src="render.js"></script>
+    <script src="plot.js"></script>
+</head>
+
+<div style="display: flex; flex-direction: row;">
+    <canvas id="canvas" width="900" height="900" style="border: 1px solid #c3c3c3;"></canvas>
+    <div>
+        <h1>Instructions</h1>
+        <ul>
+            <li>Arrows - rotate</li>
+            <li>Space - reset rotation</li>
+            <li>Z - switch between surface and point rendering</li>
+            <li>X - enable basic shader</li>
+            <li>C - enable depth blending shader for task 3</li>
+            <li>V - enable light shader</li>
+            <li>1, 2, 3, 4 - switch function to plot</li>
+        </ul>
+
+        <p>To see current state open js console.</p>
+    </div>
+</div>
+
+<script>
+    /* Functions */
+    function multi(x, z) {
+        return x * z
+    }
+
+    function f2(x, z) {
+        return x*x - 2*z
+    }
+
+    function f3(x, z) {
+        return x*x*x + z*x
+    }
+
+    function edt(x, z) {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(z, 2))
+    }
+</script>
+
+<script>        
+
+    // Setup canvas
+    const canvas = document.querySelector("#canvas")
+    const gl = canvas.getContext("webgl")
+    
+    var margin = 0.3;
+    var shaderType = ShaderEnum.basic
+    var program = initGL(gl, canvas, shaderType)
+
+    // Create data buffer
+    var plot = generatePlot(margin, multi);
+    var grid = generateGrid(20.0, 20.0, margin);
+
+    redraw();
+
+    // Redraw
+    function redraw() {
+
+        if(shaderType === ShaderEnum.light) {
+            renderAll(gl, program, [plot], shaderType);
+        } else {
+           renderAll(gl, program, [plot, grid], shaderType); 
+        }
+        
+    }
+  
+    // Detect key down
+    window.onkeydown = function(e) {
+
+        var code= e.which || e.keyCode;
+        var alpha= Math.PI / 32;
+
+        switch(code) {
+            case 38: // up
+                grid.rotateYZ(alpha);
+                plot.rotateYZ(alpha);
+                break;
+            
+            case 40: // down
+                grid.rotateYZ(-alpha);
+                plot.rotateYZ(-alpha);
+                break;
+
+            case 39: // right
+                grid.rotateXZ(alpha);
+                plot.rotateXZ(alpha);
+                break;
+
+            case 37: // left
+                grid.rotateXZ(-alpha);
+                plot.rotateXZ(-alpha);
+                break
+    
+            case 32: // space
+                grid.reset();
+	            plot.reset();
+                break;
+
+            case 88: // x
+                shaderType = ShaderEnum.basic
+                program = initGL(gl, canvas, shaderType);
+
+                console.log("Basic shader on");
+                break;
+
+            case 67: // c
+                shaderType = ShaderEnum.blend
+                program = initGL(gl, canvas, shaderType);
+
+                console.log("Blending shader on");
+                break;
+
+            case 86: // v
+                shaderType = ShaderEnum.light
+                program = initGL(gl, canvas, shaderType);
+
+                console.log("Light shader on");
+                break;
+
+            case 90: // z
+                if(plot.glType === gl.POINTS) {
+                    console.log("Render surface: ", true);
+                    plot.glType = gl.TRIANGLES;
+
+                } else {
+                    console.log("Render surface: ", false);
+                    plot.glType = gl.POINTS;
+                }
+                break;
+
+            case 49: // 1
+                grid.reset();
+                plot = generatePlot(margin, multi);
+                break;
+
+            case 50: // 2
+                grid.reset();
+                plot = generatePlot(margin, f2);
+                break;
+
+            case 51: // 3
+                grid.reset();
+                plot = generatePlot(margin, f3);
+                break;
+
+            case 52: // 4
+                grid.reset();
+                plot = generatePlot(margin, edt);
+                break;
+        }
+        redraw()
+    }
+
+</script>
+
+</html>
