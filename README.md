@@ -1,9 +1,9 @@
 # WebGL-3D-plotter
 Basic 3D function plotter in WebGL
 
-Plotting predefined functions as point clouds and meshes with few different shaders: basic, fading, light.
+Plotting predefined functions as point clouds and meshes with few different shaders: basic, blend, light.
 
-Point cloud with fading shader
+Point cloud with blend shader
 ![Alt text](res/point-plot.PNG)
 
 Mesh with basic shader:
